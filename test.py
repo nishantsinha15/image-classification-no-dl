@@ -13,7 +13,7 @@ def write_to_csv(file_names, y):
             test_writer.writerow([name, str(y[i])])
 
 
-def load_data():
+def load_test_data():
     test_files = os.listdir('data/sml_test')
     X = []
     for file in test_files:
@@ -25,6 +25,6 @@ def load_data():
 
 
 def run_test(model):
-    test_files, X = load_data()
+    test_files, X = load_test_data()
     pred = model.predict(X)
     write_to_csv(test_files, pred)
