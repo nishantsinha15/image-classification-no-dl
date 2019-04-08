@@ -12,12 +12,7 @@ from sklearn.svm import LinearSVC
 from skimage import color
 from skimage import io
 import numpy as np
-
-def preprocess(img):
-    img = color.rgb2gray(img)
-    img = img.flatten()
-    return img
-
+import utils
 
 def read_csv(file_name='data/sml_train.csv'):
     x_files = []
@@ -33,20 +28,20 @@ def read_csv(file_name='data/sml_train.csv'):
     return x_files, y
 
 
-def read_images(x_files, prefix = 'data/sml_train/'):
+def read_images(x_files, prefix='data/sml_train/'):
     X = []
     X_test = []
     for file in x_files:
         name = prefix + file
         x = plt.imread(name)
-        x = preprocess(x)
+        x = utils.preprocess(x)
         X.append(x)
 
     test_files = os.listdir('data/sml_test')
     for file in test_files:
         name = 'data/sml_test/' + file
         x = plt.imread(name)
-        x = preprocess(x)
+        x = utils.preprocess(x)
         X_test.append(x)
     print(len(X), len(X_test))
     return X, X_test, test_files
@@ -65,23 +60,22 @@ def model(X, Y):
 
     t = time.time()
     svc = LinearSVC(C=1.0)
-    svc.fit(X,Y)
+    svc.fit(X, Y)
     filename = 'svc_model.sav'
     pickle.dump(model, open(filename, 'wb'))
-    print("Linear SVC trained ", svc.score(X,Y), time.time() - t)
+    print("Linear SVC trained ", svc.score(X, Y), time.time() - t)
 
     t = time.time()
     rfc = RandomForestClassifier(n_estimators=100)
     rfc.fit(X, Y)
     filename = 'rf_model.sav'
     pickle.dump(model, open(filename, 'wb'))
-    print('Random forest trained in ', rfc.score(X,Y), time.time() - t )
+    print('Random forest trained in ', rfc.score(X, Y), time.time() - t)
 
 
 def predict(X_test, test_files):
     model = pickle.load(open('svc_model.sav', 'rb'))
     Y = model.predict(X_test)
-
 
 
 x, Y = read_csv()
