@@ -1,52 +1,70 @@
 # open the train file
 import csv
+import cv2
 import os
 import pickle
 import time
 from collections import defaultdict
+
+import mahotas as mahotas
 import matplotlib.pyplot as plt
+from pandas.tests.groupby.test_value_counts import bins
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import LinearSVC
 from skimage import color
 from skimage import io
 import numpy as np
 
 
-def read_csv(file_name='data/sml_train.csv'):
-    x_files = []
-    y = []
-    count = defaultdict(int)
-    with open(file_name) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            x_files.append(row[0])
-            y.append(int(row[1]))
-            count[int(row[1])] += 1
-    return x_files, y
+def preprocess(image):
+    # img = color.rgb2gray(img)
+    # import scipy.misc
+    # img = scipy.misc.imresize(img, (32, 32))
+    # img = img.flatten()
+    if image.shape == (64,64):
+        temp = np.array([[1, 2], [3, 4]])
+        image = np.stack((temp,) * 3, axis=-1)
+    if image.shape != (64,64,3):
+        print("here ", image.shape)
+    global_feature = np.hstack([fd_histogram(image), fd_haralick(image), fd_hu_moments(image)])
+    return global_feature
 
 
-def read_images(x_files, prefix='data/sml_train/'):
-    X = []
-    for file in x_files:
-        name = prefix + file
-        x = plt.imread(name)
-        x = preprocess(x)
-        X.append(x)
-    return np.asarray(X)
+def fd_hu_moments(image):
+    # if image.shape[2] == 3:
+    if image.shape == (64,64,3):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    feature = cv2.HuMoments(cv2.moments(image)).flatten()
+    return feature
 
 
-def load_train_data():
-    x_files, Y = read_csv()
-    X = read_images(x_files)
-    return X, np.asarray(Y)
+def fd_haralick(image):
+    # if image.shape[2] == 3:
+    if image.shape == (64,64,3):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # compute the haralick texture feature vector
+    haralick = mahotas.features.haralick(image).mean(axis=0)
+    return haralick
 
 
-def preprocess(img):
-    img = color.rgb2gray(img)
-    img = img.flatten()
-    return img
+def fd_histogram(image, mask=None):
+    bins = 8
+    # convert the image to HSV color-space
+    # if image.shape == (64, 64, 3):
+    #     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    #     print("image.shape")
+    # else:
+    #     print("ignored")
+    plt.imsave('this.png', image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # compute the color histogram
+    hist = cv2.calcHist([image], [0, 1, 2], None, [bins, bins, bins], [0, 256, 0, 256, 0, 256])
+    # normalize the histogram
+    cv2.normalize(hist, hist)
+    return hist.flatten()
 
 
 def get_mean(data):
