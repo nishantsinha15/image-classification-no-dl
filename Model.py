@@ -4,6 +4,8 @@ import time
 from collections import defaultdict
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.linear_model import SGDClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 import numpy as np
 import test
@@ -13,17 +15,35 @@ import Pca
 
 class Model:
 
-    def svm_linear(self, X, Y):
-        model = SVC(kernel="linear", C=0.025)
+    def sgd(self, X, Y):
+        model = SGDClassifier(random_state=42, max_iter=1000, tol=1e-3)
         t = time.time()
         model.fit(X, Y)
         print("Model trained in ", time.time() - t)
         print("Score = ", model.score(X, Y))
-        self.save_model(model)
+        self.save_model(model, 'mlp')
+        return model
+
+    def mlp(self, X, Y):
+        model = MLPClassifier((100, 100, 100, 100), verbose=True)
+        t = time.time()
+        model.fit(X, Y)
+        print("Model trained in ", time.time() - t)
+        print("Score = ", model.score(X, Y))
+        self.save_model(model, 'mlp')
+        return model
+
+    def svm_linear(self, X, Y):
+        model = SVC(kernel="linear", C=0.025, verbose=True)
+        t = time.time()
+        model.fit(X, Y)
+        print("Model trained in ", time.time() - t)
+        print("Score = ", model.score(X, Y))
+        self.save_model(model, 'svm_other')
         return model
 
     def rforest(self, X, Y):
-        model = RandomForestClassifier(max_depth=5, n_estimators=500, max_features=1)
+        model = RandomForestClassifier(max_depth=5, n_estimators=1000, max_features=1)
         t = time.time()
         model.fit(X, Y)
         print("Model trained in ", time.time() - t)

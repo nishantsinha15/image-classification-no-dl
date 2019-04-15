@@ -1,3 +1,5 @@
+import sys
+
 from sklearn.model_selection import StratifiedShuffleSplit
 import Model
 import DataLoader
@@ -11,16 +13,17 @@ def do_testing(model):
 
 def finalize():
     print("Loading Data")
-    dataLoader = DataLoader.DataLoader()
     X, y = dataLoader.load_train_data()
     modelClass = Model.Model()
     rforest = modelClass.rforest(X, y)
     do_testing(rforest)
+    sys.exit()
 
 
 if __name__ == '__main__':
-    print("Loading Data")
     dataLoader = DataLoader.DataLoader()
+    # finalize()
+    print("Loading Data")
     X, y = dataLoader.load_train_data()
     modelClass = Model.Model()
     sss = StratifiedShuffleSplit(n_splits=5, test_size=0.3, random_state=0)
@@ -33,5 +36,5 @@ if __name__ == '__main__':
         y_train, y_test = y[train_index], y[test_index]
         i += 1
 
-        rforest = modelClass.rforest(X_train, y_train)
-        print("Validation Score = ", rforest.score(X_test, y_test))
+        svm = modelClass.rforest(X_train, y_train)
+        print("Validation Score = ", svm.score(X_test, y_test))
